@@ -1,0 +1,11 @@
+{
+  "dependencies": {
+    "@webxr-input-profiles/motion-controllers": "^1.0.0",
+    "three": "^0.164.1",
+    "three-mesh-ui": "^6.5.4"
+  },
+  "devDependencies": {
+    "@types/three": "^0.164.1",
+    "vite": "^5.2.11"
+  }
+}

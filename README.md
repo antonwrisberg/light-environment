@@ -1,2 +1,2 @@
 # light-environment
-Three.js VR environment with jsPsych
+Three.js VR environment for light environment study
