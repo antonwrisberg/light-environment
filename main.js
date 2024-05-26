@@ -13,6 +13,7 @@ const camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.inner
 
 const skySphereTextures = [
   './textures/144_beech_forest.jpg',
+  './textures/144_beech_forest_upside_down.jpg',
   './textures/338_knivsaasen.jpg',
   './textures/344_knivsaasen.jpg',
   './textures/534_alpine_meadow.jpg',
