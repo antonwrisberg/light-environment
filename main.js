@@ -241,6 +241,22 @@ renderer.setAnimationLoop( function () {
 
 const session = renderer.xr.getSession();
 
+renderer.xr.getController(0).addEventListener('connected', function() {
+  console.log("Controller 1 connected");
+})
+
+renderer.xr.getController(1).addEventListener('connected', function() {
+  console.log("Controller 2 connected");
+})
+
+renderer.xr.getController(0).addEventListener('click', function() {
+  console.log("Controller 1 clicked");
+})
+
+renderer.xr.getController(1).addEventListener('click', function() {
+  console.log("Controller 2 clicked");
+})
+
 renderer.xr.getController(0).addEventListener('squeeze', function() {
   console.log("Controller 1 squeezed");
 
@@ -288,6 +304,9 @@ renderer.xr.getController(1).addEventListener('select', function() {
 
   loadNewSky(currentSkySphereIndex);
 })
+
+
+
 
 function returnPositionOnPath(relativePosition) {
     return {
