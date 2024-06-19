@@ -3,13 +3,23 @@ import WebGL from 'three/addons/capabilities/WebGL.js';
 import { VRButton } from 'three/addons/webxr/VRButton.js';
 import Stats from 'three/addons/libs/stats.module.js';
 
+let targetColor = 0xff0000; // Target colour
 
-const scene = new THREE.Scene();
+let colors = [
+  0x4b3adc,
+  0xffed9e,
+  0x009c61,
+  0xc9f2eb,
+  0xf5c200,
+  0xf1dca2,
+  0x03d693,
+  0x3e9fd4,
+  0xbfb6e2,
+]
 
-// const light = new THREE.AmbientLight( 0xff4040 ); // soft white light
-// scene.add( light );
-
-const camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 1000 );
+const scene   = new THREE.Scene();
+const camera  = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 1000 );
+document.log  = [];
 
 const skySphereTextures = [
   './textures/144_beech_forest.jpg',
@@ -29,7 +39,7 @@ let skySphereMesh = new THREE.Mesh(
   
 scene.add(skySphereMesh);
 
-function loadNewSky(skySphereTextureIndex) {
+document.loadNewSky = function (skySphereTextureIndex) {
   console.log("Loading sky sphere texture index " + skySphereTextureIndex + ": " + skySphereTextures[skySphereTextureIndex]);
   textureLoader.load(skySphereTextures[skySphereTextureIndex], (jpgTexture) => {
     skySphereMesh.material = new THREE.MeshBasicMaterial({
@@ -40,7 +50,7 @@ function loadNewSky(skySphereTextureIndex) {
 }
 
 var currentSkySphereIndex = 0;
-loadNewSky(currentSkySphereIndex);
+// document.loadNewSky(currentSkySphereIndex);
 
 const renderer = new THREE.WebGLRenderer({
   antialias: true
@@ -55,10 +65,10 @@ document.body.appendChild(renderer.domElement);
 const diameter = 0.4;
 
 // Sphere gemoetry
-const sphere = new THREE.SphereGeometry(diameter / 1.8); 
+const sphere = new THREE.SphereGeometry(diameter / 1.6); 
 
 // Tetrahedron geometry
-const tetrahedron = new THREE.TetrahedronGeometry(diameter / 1.3);
+const tetrahedron = new THREE.TetrahedronGeometry(diameter / 1.2);
 
 // Cube geometry
 const cube = new THREE.BoxGeometry(diameter, diameter, diameter);
@@ -72,8 +82,9 @@ const forms = [
 const objects = [];
 
 function addObject() {
-  let newObject = new THREE.Mesh(sphere, new THREE.MeshStandardMaterial());
+  let newObject = new THREE.Mesh(cube, new THREE.MeshStandardMaterial());
   newObject.position.z = 1500;
+  newObject.material.color.set(colors[Math.floor(Math.random() * colors.length)]);
   objects.push(newObject);
   scene.add(newObject);
   updateScalar();
@@ -103,16 +114,15 @@ function updateScalar(up = false) {
   forms.forEach(function(form) {
     form.scale(scalar, scalar, scalar);
   })
+
+  // objects.forEach(function(object) {
+  //   console.log(object)
+  // })
 }
 
-objects.forEach(function(object) {
-  
-  
-})
-
-addObject();
-addObject();
-addObject();
+// addObject();
+// addObject();
+// addObject();
 
 // Add stats.js
 let stats = new Stats();
@@ -140,25 +150,12 @@ lights.forEach(function(light) {
   scene.add(light);
 })
 
-let targetColor = 0xff0000; // Target colour
-
-let colors = [
-  0x4b3adc,
-  0xffed9e,
-  0x009c61,
-  0xc9f2eb,
-  0xf5c200,
-  0xf1dca2,
-  0x03d693,
-  0x3e9fd4,
-  0xbfb6e2,
-]
-
 camera.position.y = 1.7;
 
 document.body.appendChild( VRButton.createButton( renderer ) );
 
 var lastSecond = 0;
+var thisTrial = null;
 
 renderer.setAnimationLoop( function () {
 
@@ -192,7 +189,7 @@ renderer.setAnimationLoop( function () {
         objects[Math.floor(Math.random() * objects.length)].geometry = forms[Math.floor(Math.random() * forms.length)];
       } else {
         // console.log("Change colour")
-        if (Math.random() < 0.3) { // With 30% chance, make one of the objects red
+        if (Math.random() < 0.4) { // With 40% chance, make one of the objects red
           objects[Math.floor(Math.random() * objects.length)].material.color.set(targetColor);
         } else { // Otherwise make one of the objects one of the distractor colours
           objects[Math.floor(Math.random() * objects.length)].material.color.set(colors[Math.floor(Math.random() * colors.length)]);
@@ -200,6 +197,29 @@ renderer.setAnimationLoop( function () {
       }
 
       lastSecond = thisSecond;
+
+      const logData = {
+        event: "trialStart",
+        timeStamp: date.getTime(),
+        objects: []
+      };
+      objects.forEach(function(object, index) {
+        logData.objects.push({
+          geometry: object.geometry.type,
+          color: {
+            r: object.material.color.r,
+            g: object.material.color.g,
+            b: object.material.color.b
+          },
+          isTargetColor: (object.material.color.r == 1 && object.material.color.g == 0 && object.material.color.b == 0),
+          isTargetGeometry: (object.geometry.type == "SphereGeometry"),
+          isTarget: (object.material.color.r == 1 && object.material.color.g == 0 && object.material.color.b == 0 && object.geometry.type == "SphereGeometry")
+        });
+      })
+
+      document.log.push(logData);
+      console.log(logData);
+      thisTrial = logData;
     }
 
     objects.forEach(function(object, index) {
@@ -264,9 +284,9 @@ renderer.xr.getController(0).addEventListener('squeeze', function() {
   //   object.material.color.set(0xffffff);
   // })
 
-  console.log("Adding two moving objects");
-  addObject();
-  addObject();
+  // console.log("Adding two moving objects");
+  // addObject();
+  // addObject();
 })
 
 renderer.xr.getController(1).addEventListener('squeeze', function() {
@@ -276,36 +296,80 @@ renderer.xr.getController(1).addEventListener('squeeze', function() {
   //   object.geometry = forms[0];
   // })
 
-  console.log("Removing two moving objects");
-  removeObject();
-  removeObject();
+  // console.log("Removing two moving objects");
+  // removeObject();
+  // removeObject();
 })
 
 renderer.xr.getController(0).addEventListener('select', function() {
   console.log("Controller 1 selected");
 
-  if (currentSkySphereIndex < skySphereTextures.length - 1) {
-    currentSkySphereIndex ++;
-  } else {
-    currentSkySphereIndex = 0;
+  // if (currentSkySphereIndex < skySphereTextures.length - 1) {
+  //   currentSkySphereIndex ++;
+  // } else {
+  //   currentSkySphereIndex = 0;
+  // }
+
+  // loadNewSky(currentSkySphereIndex);
+  const date = new Date();
+
+  const logData = {
+    event: "participantReaction",
+    timeStamp: date.getTime(),
+    rt: date.getTime() - thisTrial.timeStamp,
+    correctResponse: false,
+    objects: thisTrial.objects
   }
 
-  loadNewSky(currentSkySphereIndex);
+  thisTrial.objects.forEach(function(obj) {
+    if (obj.isTarget) {
+      logData.correctResponse = true;
+
+    }
+  });
+
+  console.log(logData);
+  document.log.push(logData);
+
+  objects.forEach(function(obj) {
+    obj.material.color.set(colors[Math.floor(Math.random() * colors.length)]);
+  })
 })
 
 renderer.xr.getController(1).addEventListener('select', function() {
   console.log("Controller 2 selected");
 
-  if (currentSkySphereIndex > 0) {
-    currentSkySphereIndex --;
-  } else {
-    currentSkySphereIndex = skySphereTextures.length - 1;
-  }
+  // if (currentSkySphereIndex > 0) {
+  //   currentSkySphereIndex --;
+  // } else {
+  //   currentSkySphereIndex = skySphereTextures.length - 1;
+  // }
 
-  loadNewSky(currentSkySphereIndex);
+  // loadNewSky(currentSkySphereIndex);
 })
 
+document.addObject = function() {
+  console.log("Adding a moving object");
+  addObject();
+  // removeObject();
+}
 
+document.removeObject = function() {
+  console.log("Romving a moving object");
+  removeObject();
+}
+
+document.startExperiment = function() {
+  console.log("Adding seven moving objects");
+
+  addObject();
+  addObject();
+  addObject();
+  addObject();
+  addObject();
+  addObject();
+  addObject();
+}
 
 
 function returnPositionOnPath(relativePosition) {
@@ -349,3 +413,38 @@ if ( WebGL.isWebGLAvailable() ) {
 //   motionControllers[xrInputSource] = motionController;
 //   addMotionControllerToScene(motionController);
 // }
+
+var textFile = null;
+function makeTextFile () {
+  var data = new Blob(document.log, {type: 'text/json'});
+
+  // If we are replacing a previously generated file we need to
+  // manually revoke the object URL to avoid memory leaks.
+  if (textFile !== null) {
+    window.URL.revokeObjectURL(textFile);
+  }
+
+  textFile = window.URL.createObjectURL(data);
+
+  // returns a URL you can use as a href
+  return textFile;
+};
+
+function downloadFile() {
+  var link = document.createElement('a');
+      link.setAttribute('download', 'info.txt');
+      link.setAttribute('id', 'downloadLink');
+      link.href = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(document.log));
+      link.setAttribute("download", "data.json");
+      link.style.display = "none";
+  document.body.appendChild(link);
+}
+
+document.endExperiment = function() {
+  // makeTextFile();
+  downloadFile();
+
+  var event = new MouseEvent('click');
+  document.getElementById('downloadLink').dispatchEvent(event);
+      // document.body.removeChild(link);
+}
