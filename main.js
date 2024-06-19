@@ -91,7 +91,7 @@ function addObject() {
 }
 
 function removeObject() {
-  if (objects.length > 1) {
+  if (objects.length > 0) {
     let objectIndex = objects.length - 1// Math.floor(Math.random() * objects.length);
     scene.remove(objects[objectIndex]);
     objects.splice(objectIndex, 1);
@@ -224,8 +224,8 @@ renderer.setAnimationLoop( function () {
 
     objects.forEach(function(object, index) {
       object.position.x = returnPositionOnPath(((s + index * 6 / objects.length) % 60 % 6 * 1000 + ms) / 6000).x
-      object.position.y = 1.7 + returnPositionOnPath(((s + index * 6 / objects.length) % 60 % 6 * 1000 + ms) / 3000).y * 0.5
-      object.position.z = - 1.5
+      object.position.y = 1 + returnPositionOnPath(((s + index * 6 / objects.length) % 60 % 6 * 1000 + ms) / 3000).y * 0.5
+      object.position.z = - 2
     })
   }
     
@@ -441,6 +441,14 @@ function downloadFile() {
 }
 
 document.endExperiment = function() {
+  removeObject();
+  removeObject();
+  removeObject();
+  removeObject();
+  removeObject();
+  removeObject();
+  removeObject();
+
   // makeTextFile();
   downloadFile();
 
